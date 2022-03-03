@@ -51,7 +51,7 @@ sig ReliabilityStatus {}
 //there should be no test case that is not related to a story 
 //for every test case there must be some story that has it associated with it
 fact noLooseTestCase{
-	all  tc: TestCase|some s:Story| tc in s.testCases
+	all tc: TestCase|some s:Story| tc in s.testCases
 }
 
 //no two stories should have the same test case
