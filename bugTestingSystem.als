@@ -18,22 +18,22 @@ one sig Unresolved, WorkInProgress, Resolved extends State {}
 //could have a description 
 //Calculator and I want to add negative numbers
 sig Story {
-	testCases: set TestCase, 
+	testCases: disj set TestCase, 
 	priorityLevel: one Priority
 }
 
 sig TestCase {
 	priorityLevel: one Priority, 
-	b: lone Description, 
+	desc: disj one Description, 
 	expectedOutput: one Output
 }
 
 sig Output, Description, Resolution {}
 
-sig TestPackage {
-	allTestCases: Feature -> Story, //we had some Feature and Some story
-	dependencies: TestPackage -> TestPackage
-} //all test cases developed are refered to as a testPackage
+//sig TestPackage {
+//	allTestCases: Feature->Story, //we had some Feature and Some story (this is not specified properly)
+//	dependencies: TestPackage -> TestPackage
+//} //all test cases developed are refered to as a testPackage
 
 //let resolution be a set amount of time
 //we had resolutionPeriod, figure out how this works first. Ask Ms
@@ -49,13 +49,16 @@ sig ReliabilityStatus {}
 //FACTS
 
 //there should be no test case that is not related to a story 
+//for every test case there must be some story that has it associated with it
 fact noLooseTestCase{
-	all tc: TestCase| some story: Story | some  story->tc
+	all  tc: TestCase|some s:Story| tc in s.testCases
 }
 
-//two stories should not have the same test case
+//no two stories should have the same test case
+	//added disj to the set of test cases that a story should have to enforce this
 
-//two storties should not have the same description
+//no two testCases should have the same description
+	//added disj to the one description that a testcase should have
 
 //a story can only belong to one feature 
 
@@ -65,11 +68,11 @@ fact noLooseTestCase{
 
 //once a test package esist there must be some feature it realates to 
 
-//there should be no empty tets packages 
+//there should be no empty test packages 
 
 //each story should belong to a feature 
-//fact noLooseStory{
-//	all story: Story | some feat: Feature| some story->feat
-//}
+fact noLooseStory{
+	all story: Story | some feat: Feature| story in feat.stories
+}
 
 //A failure should be related to the test case that discovered it 
