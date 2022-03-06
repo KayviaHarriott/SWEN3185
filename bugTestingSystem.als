@@ -56,19 +56,36 @@ fact noLooseTestCase{
 
 //no two stories should have the same test case
 	//added disj to the set of test cases that a story should have to enforce this
+fact noSameTestCaseforStory{
+	no disj storya, storyb : Story | some storya.TestCase & storyb.TestCase
+}
+
 
 //no two testCases should have the same description
 	//added disj to the one description that a testcase should have
+fact uniqueDescriptionForEachTestCase{
+	no testCaseA, testCaseB : TestCase | some testCaseA.desc & some testCaseB.desc
+}
 
-//a story can only belong to one feature 
+
+//a story can only belong to one feature
+fact storyOnlyOneFeature{
+	all feature: Feature | lone feature.stories
+} 
 
 //a testcase can only belong to one test package (which implies that it cannot belong to another story outside of the test package)
 
 //if it is that a testcase exists, a test package should exist 
+fact testPackageExistIfTestCaseExist{
+	
+} 
 
-//once a test package esist there must be some feature it realates to 
+//once a test package exist there must be some feature it realates to 
 
 //there should be no empty test packages 
+fact noEmptyTestPackages{
+	
+}
 
 //each story should belong to a feature 
 fact noLooseStory{
