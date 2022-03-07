@@ -57,14 +57,14 @@ fact noLooseTestCase{
 //no two stories should have the same test case
 	//added disj to the set of test cases that a story should have to enforce this
 fact noSameTestCaseforStory{
-	no disj storya, storyb : Story | some storya.TestCase & storyb.TestCase
+	//no disj storya, storyb : Story | some storya.TestCase //& storyb.TestCase
 }
 
 
 //no two testCases should have the same description
 	//added disj to the one description that a testcase should have
 fact uniqueDescriptionForEachTestCase{
-	no testCaseA, testCaseB : TestCase | some testCaseA.desc & some testCaseB.desc
+	no testCaseA, testCaseB : TestCase | some testCaseA.desc & testCaseB.desc
 }
 
 
