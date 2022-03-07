@@ -51,7 +51,7 @@ sig ReliabilityStatus {}
 //there should be no test case that is not related to a story 
 //for every test case there must be some story that has it associated with it
 fact noLooseTestCase{
-	all tc: TestCase|some s:Story| tc in s.testCases
+	all tc: TestCase|some s:Story| tc in s.testCases //I THINK THIS WORKS - KAYVIA
 }
 
 //no two stories should have the same test case
@@ -64,13 +64,13 @@ fact noSameTestCaseforStory{
 //no two testCases should have the same description
 	//added disj to the one description that a testcase should have
 fact uniqueDescriptionForEachTestCase{
-	no testCaseA, testCaseB : TestCase | some testCaseA.desc & testCaseB.desc
+	no disj testCaseA, testCaseB : TestCase | some testCaseA.desc & testCaseB.desc
 }
 
 
 //a story can only belong to one feature
 fact storyOnlyOneFeature{
-	all feature: Feature | lone feature.stories
+	//all feature: Feature | lone feature.stories
 } 
 
 //a testcase can only belong to one test package (which implies that it cannot belong to another story outside of the test package)
@@ -89,7 +89,11 @@ fact noEmptyTestPackages{
 
 //each story should belong to a feature 
 fact noLooseStory{
-	all story: Story | some feat: Feature| story in feat.stories
+	//all story: Story | some feat: Feature| story in feat.stories
 }
 
+pred M2 () {}
+//run f
+
+run M2 for 3
 //A failure should be related to the test case that discovered it 
