@@ -83,20 +83,26 @@ fact noTestCaseAndFailureSameDescription{
 }
 
 //no two failures can have the same description - Kayvia
-//fact uniqueFailureDescription{
-	//all disj failure1,failure2: Failure | no failure1.description & failure2.description
-//}
+fact uniqueFailureDescription{
+	all disj failure1,failure2: Failure | no failure1.description & failure2.description
+}
 
+//all resolutions should be associated with a failure
+fact allResolutionsHaveFailure{
+	all res: Resolution | some fail: Failure | res in fail.resolution
+}
 
 // FUNCTIONS
 fun getTestPackage[f :Feature]: set TestCase{
 	f.stories.testCases
 }
 
+//PREDICATES
+
 //Instance of all relations in the model
 pred sanityCheck {
 	one System
-	some Feature
+	#Feature > 2
 	some Story
 	some TestCase
 	some Input
@@ -104,7 +110,7 @@ pred sanityCheck {
 	some Failure
 	some Description
 	some Resolution} 
-run sanityCheck for 2 but 5 TestCase, 5 Feature
+run sanityCheck for 5
 
 //instance where there is a story that has more than two test cases and more than two failures
 pred anInstance[s:Story]{
