@@ -2,7 +2,11 @@ module bugTrackingSystem
 
 // SYSTEM ELEMENTS
 //one sig System { TPs: seq TestPackage, reliabilityStat: one ReliabilityStatus }
+<<<<<<< Updated upstream
 one sig System { allFeatures: some Feature} //, reliabilityStat: one ReliabilityStatus }
+=======
+one sig System { allFeatures: some  Feature, reliabilityStat: one ReliabilityStatus }
+>>>>>>> Stashed changes
 
 
 sig Feature {}//stories: set Story}
@@ -19,8 +23,14 @@ sig Feature {}//stories: set Story}
 //could have a description 
 //Calculator and I want to add negative numbers
 sig Story {
+<<<<<<< Updated upstream
 	//testCases: disj set TestCase, 
 	//priorityLevel: one Priority
+=======
+	testCases: disj set TestCase, 
+	priorityLevel: one Priority
+	
+>>>>>>> Stashed changes
 }
 
 sig TestCase {
@@ -59,7 +69,7 @@ fact noLooseTestCase{
 //no two stories should have the same test case
 	//added disj to the set of test cases that a story should have to enforce this
 fact noSameTestCaseforStory{
-	//no disj storya, storyb : Story | some storya.TestCase //& storyb.TestCase
+	//no storya, storyb : Story | some storya.TestCase //& storyb.TestCase
 }
 
 
@@ -74,9 +84,16 @@ fact uniqueDescriptionForEachTestCase{
 //a story can only belong to one feature
 fact storyOnlyOneFeature{
 	//all feature: Feature | lone feature.stories
+	//ll story: Story | lone Feature
+	all story: Story | one feat: Feature | story in feat.stories
+//	all story: Story | lone story.Feature
+	
 } 
 
-//a testcase can only belong to one test package (which implies that it cannot belong to another story outside of the test package)
+//a testcase can only belong to one test 
+
+
+ //(which implies that it cannot belong to another story outside of the test package)
 
 //if it is that a testcase exists, a test package should exist 
 fact testPackageExistIfTestCaseExist{
@@ -92,13 +109,28 @@ fact noEmptyTestPackages{
 
 //each story should belong to a feature 
 fact noLooseStory{
-	//all story: Story | some feat: Feature| story in feat.stories
+	all story: Story | some feat: Feature| story in feat.stories
 }
 
+<<<<<<< Updated upstream
 pred show () {
 some Feature
 }
 //run f
 
 run show for 6 but 3 Feature
+=======
+pred show {
+	some Feature
+	some Story
+}
+
+run show for 2 but 5 Feature
+>>>>>>> Stashed changes
 //A failure should be related to the test case that discovered it 
+fact failureToTestCase {
+//	all fails: Failure | one tests:TestCase | fails in tests.fails
+}
+
+
+
