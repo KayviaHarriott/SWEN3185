@@ -19,33 +19,25 @@ one sig Unresolved, WorkInProgress, Resolved extends State {}
 //Calculator and I want to add negative numbers
 sig Story {
 	testCases: disj set TestCase, 
-	priorityLevel: one Priority,
+	priorityLevel: one Priority
 }
 
 sig TestCase {
 	priorityLevel: one Priority, 
 	desc: disj one Description, 
+	inputs: some Input,
 	expectedOutput: one Output,
 	faults: set Failure
 }
 
-sig Output, Description, Resolution {}
-
-//sig TestPackage {
-//	allTestCases: Feature, //we had some Feature and Some story (this is not specified properly)
-//	dependencies: TestPackage -> TestPackage
-//} //all test cases developed are refered to as a testPackage
-
-//let resolution be a set amount of time
-//we had resolutionPeriod, figure out how this works first. Ask Ms
 sig Failure {
 	severityLevel: one Severity, 
-	resolution: Failure -> lone Resolution, 
+	resolution: lone Resolution, 
 	description: one Description, 
 	state: one State
 } 
 
-sig ReliabilityStatus {}
+sig Input,Output, Description, Resolution, ReliabilityStatus {}
 
 //FACTS
 
@@ -57,7 +49,7 @@ fact uniqueDescriptionForEachTestCase{
 //there should be no test case that is not related to a story 
 //for every test case there must be some story that has it associated with it
 fact noLooseTestCase{
-	all tc: TestCase|some s:Story| tc in s.testCases //I THINK THIS WORKS - KAYVIA
+	all testCase: TestCase|some s:Story| testCase in s.testCases 
 }
 
 //a story can only belong to one feature
@@ -72,20 +64,56 @@ fact noLooseStory{
 
 //no two stories should share any test cases
 fact noSameTestCaseforStory{
-	all disj s1,s2: Story | no s1.testCases & s2.testCases
+	all disj storyA,storyB: Story | no storyA.testCases & storyB.testCases
 }
 
-//A failure should be related to the test case that discovered it
+//A failure should only be related to one testcase
+fact oneTestCaseforaFailure{
+	all failure: Failure | one testCase: TestCase | failure in testCase.faults
+}
+
+//no feature should be disconnected from the system
+fact noLooseFeature{
+	all feature: Feature | one system: System | feature in system.allFeatures
+}
+
+//no shared descriptions between testcases and failures
+fact noTestCaseAndFailureSameDescription{
+	all testCase: TestCase, fails: Failure | no testCase.desc & fails.description
+}
+
+//no two failures can have the same description - Kayvia
+//fact uniqueFailureDescription{
+	//all disj failure1,failure2: Failure | no failure1.description & failure2.description
+//}
 
 
-/* Can we get an instance of all the relations in the model? */
+// FUNCTIONS
+fun getTestPackage[f :Feature]: set TestCase{
+	f.stories.testCases
+}
+
+//Instance of all relations in the model
 pred sanityCheck {
 	one System
 	some Feature
 	some Story
 	some TestCase
+	some Input
 	some Output 
 	some Failure
 	some Description
 	some Resolution} 
-run sanityCheck for 2 but 5 TestCase
+run sanityCheck for 2 but 5 TestCase, 5 Feature
+
+//instance where there is a story that has more than two test cases and more than two failures
+pred anInstance[s:Story]{
+	# s.testCases > 2
+	#s.testCases.faults > 2
+}run anInstance for 4 expect 1
+
+//instance where there is a system with three features and atleast 3 stories have been written
+pred anInstance2[sys: System]{
+	#sys.allFeatures = 3
+	#sys.allFeatures.stories > 2
+}run anInstance2 for 4 expect 1
