@@ -35,7 +35,7 @@ sig Failure {
 	resolution: lone Resolution, 
 	description: one Description, 
 	state: one State
-} 
+}
 
 sig Input,Output, Description, Resolution, ReliabilityStatus {}
 
@@ -92,6 +92,11 @@ fact allResolutionsHaveFailure{
 	all res: Resolution | some fail: Failure | res in fail.resolution
 }
 
+fact ifResolvedHAsResolution{
+	all failure: Failure| failure.state ! = Resolved implies #failure.resolution = 0
+}
+
+
 // FUNCTIONS
 fun getTestPackage[f :Feature]: set TestCase{
 	f.stories.testCases
@@ -102,9 +107,9 @@ fun getTestPackage[f :Feature]: set TestCase{
 //Instance of all relations in the model
 pred sanityCheck {
 	one System
-	#Feature > 2
-	some Story
-	some TestCase
+	#Feature = 2
+	#Story  = 3
+	#TestCase> 3
 	some Input
 	some Output 
 	some Failure
@@ -116,10 +121,10 @@ run sanityCheck for 5
 pred anInstance[s:Story]{
 	# s.testCases > 2
 	#s.testCases.faults > 2
-}run anInstance for 4 expect 1
+}run anInstance for 6
 
 //instance where there is a system with three features and atleast 3 stories have been written
 pred anInstance2[sys: System]{
-	#sys.allFeatures = 3
+	#sys.allFeatures = 2
 	#sys.allFeatures.stories > 2
-}run anInstance2 for 4 expect 1
+}run anInstance2 for 5
