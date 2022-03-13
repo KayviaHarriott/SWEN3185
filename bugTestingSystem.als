@@ -141,10 +141,6 @@ pred anInstance3[]{
 
 pred isHamiltonianPath  [g , hs: Story -> Story] {
 
-	//one System
-	//some Feature
-	//#Story > 4\
-
 	one System
 	some Feature
 	#Story  > 5 
@@ -155,11 +151,35 @@ pred isHamiltonianPath  [g , hs: Story -> Story] {
 	some Description
 	some Resolution 
 
+	/*Path properties */
+	// tree -- connected , directed, acyclic are subsumed by the tree property
+	tree[hs]
+
+	// nodes with prev of 1 -- relax the constraint to be <= 1
+	all n: innerNodes[hs] + leaves[hs] | #pre[hs, n] <= 1
+
+	// nodes with post of 1
+	all n: innerNodes[hs] + roots[hs] | #post[hs, n] = 1
+
+	//hp has evey node in g -- this may be subsumed in tree[hp]
 	dom[g] + ran[g] = dom[hs] + ran[hs]
+
+	// hp has to be mappings already in g
 	hs in g
+
 }
 
 run isHamiltonianPath for 10 but 1 System
+
+
+/* returns Pre(v) for vertex v in graph g */
+fun pre[g: Story->Story, v: Story]: set Story {g.v}
+run pre for 6
+
+/* returns Post(v) for vertex v in graph g */
+fun post[g: Story->Story, v: Story]: set Story {v.g}
+run post for 6
+
 
 /* Returns true if hc is a hamiltonian cycle in g */
 //pred isHamiltonianCycle [g, hc: Node->Node] {
