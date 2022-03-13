@@ -92,6 +92,7 @@ fact allResolutionsHaveFailure{
 	all res: Resolution | some fail: Failure | res in fail.resolution
 }
 
+//if a failure has been resolved, and has a state of being resolved, it should have a resolution
 fact ifResolvedHAsResolution{
 	all failure: Failure| failure.state ! = Resolved implies #failure.resolution = 0
 }
