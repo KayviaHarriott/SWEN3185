@@ -16,7 +16,7 @@ abstract sig State {}
 one sig Unresolved, WorkInProgress, Resolved extends State {}
 
 abstract sig ReliabilityStatus {}
-one sig RVeryLow, RLow, RMedium, RHigh, RVeryHigh extends ReliabilityStatus {}
+one sig A, B, C, D, E, F extends ReliabilityStatus {}
 
 sig Story {
 	testCases: set TestCase, 
@@ -24,7 +24,7 @@ sig Story {
 }
 
 sig TestCase {
-	priorityLevel: one Priority, 
+	priorityLevel: Priority, 
 	desc: Description, 
 	inputs: some Input,
 	expectedOutput: Output,
@@ -77,12 +77,12 @@ fact noLooseFeature{
 	all feature: Feature | one system: System | feature in system.allFeatures
 }
 
-//English - A failure should only be related to one testcase
+//English - a failure should only be related to one testcase
 fact oneTestCaseforaFailure{
 	all failure: Failure | one testCase: TestCase | failure in testCase.failures
 }
 
-//English - if a system has atleast one feature it must have a reliability status
+//English - if a system has at least one feature it must have a reliability status
 fact hasReliabilityStatIfHasFeature{
 	all sys: System| {
 		some sys.allFeatures implies #sys.reliabilityStat = 1
@@ -140,7 +140,7 @@ run sanityCheck for 6
 
 //instance where there is a story that has more than two test cases and more than two failures
 pred anInstance[s:Story]{
-	# s.testCases > 2
+	#s.testCases > 2
 	#s.testCases.failures > 2
 }run anInstance for 6 but 1 System
 
