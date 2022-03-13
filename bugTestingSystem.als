@@ -1,13 +1,13 @@
 module bugTrackingSystem
 
 // SYSTEM ELEMENTS
-//one sig System { TPs: seq TestPackage, reliabilityStat: one ReliabilityStatus }
-one sig System { allFeatures: Feature, reliabilityStat: one ReliabilityStatus }
+sig System { allFeatures: set Feature, reliabilityStat: lone ReliabilityStatus }
+//when doing an instance of the system you can run for 1 instance of the System, or the System set contains one thing
 
-sig Feature {stories: set Story}
+sig Feature {stories: set Story, orderedStories: stories -> stories}
 
 abstract sig Priority {}
-one sig Low, Medium, High extends Priority {}
+one sig PLow, PMedium, PHigh extends Priority {}
 
 abstract sig Severity {}
 one sig Minor, Major, Critical extends Severity {}
@@ -15,85 +15,142 @@ one sig Minor, Major, Critical extends Severity {}
 abstract sig State {}
 one sig Unresolved, WorkInProgress, Resolved extends State {}
 
-//could have a description 
-//Calculator and I want to add negative numbers
+abstract sig ReliabilityStatus {}
+one sig RVeryLow, RLow, RMedium, RHigh, RVeryHigh extends ReliabilityStatus {}
+
 sig Story {
-	testCases: disj set TestCase, 
+	testCases: set TestCase, 
 	priorityLevel: one Priority
 }
 
 sig TestCase {
 	priorityLevel: one Priority, 
-	desc: disj one Description, 
-	expectedOutput: one Output
+	desc: Description, 
+	inputs: some Input,
+	expectedOutput: one Output,
+	actualOutput: one Output,
+	failures: set Failure
 }
 
-sig Output, Description, Resolution {}
-
-//sig TestPackage {
-//	allTestCases: Feature->Story, //we had some Feature and Some story (this is not specified properly)
-//	dependencies: TestPackage -> TestPackage
-//} //all test cases developed are refered to as a testPackage
-
-//let resolution be a set amount of time
-//we had resolutionPeriod, figure out how this works first. Ask Ms
 sig Failure {
 	severityLevel: one Severity, 
-	resolution: Failure -> lone Resolution, 
+	resolution: lone Resolution, 
 	description: one Description, 
 	state: one State
+}
+
+//breaking down resolution into the set of actions, maybe sig actions, and may contain
+//an empty set, we can talk about similarities of test case resolution and for instance
+//same things down to resolve a test case but one has one of high and one of low, why should that be?
+//could say one test case is common with another one and resolution may apply to two test cases
+sig Resolution{
+	ResActions: some Action
+}
+
+sig Input,Output, Description, Action {}
+
+
+-- FACTS
+
+//English - each story should belong to a feature 
+fact noLooseStory{
+	all story: Story | some feat: Feature| story in feat.stories
+}
+
+//English - a story can only belong to one feature
+fact storyOnlyOneFeature{
+	all disj featureA,featureB: Feature | no featureA.stories & featureB.stories 
 } 
 
-sig ReliabilityStatus {}
-
-//FACTS
-
-//there should be no test case that is not related to a story 
-//for every test case there must be some story that has it associated with it
+//English - for every test case there must be some story that owns it
 fact noLooseTestCase{
-	all tc: TestCase|some s:Story| tc in s.testCases //I THINK THIS WORKS - KAYVIA
+	all testCase: TestCase|some s:Story| testCase in s.testCases 
 }
 
-//no two stories should have the same test case
-	//added disj to the set of test cases that a story should have to enforce this
+//English - no two stories should share any test cases
 fact noSameTestCaseforStory{
-	//no disj storya, storyb : Story | some storya.TestCase //& storyb.TestCase
+	all disj storyA,storyB: Story | no storyA.testCases & storyB.testCases
+}
+
+//English - no feature should be disconnected from the system
+fact noLooseFeature{
+	all feature: Feature | one system: System | feature in system.allFeatures
+}
+
+//English - A failure should only be related to one testcase
+fact oneTestCaseforaFailure{
+	all failure: Failure | one testCase: TestCase | failure in testCase.failures
+}
+
+//English - if a system has atleast one feature it must have a reliability status
+fact hasReliabilityStatIfHasFeature{
+	all sys: System| {
+		some sys.allFeatures implies #sys.reliabilityStat = 1
+		and no sys.allFeatures implies #sys.reliabilityStat = 0
+	}
+}//this is faulty but good start
+
+//English - if a failure has a state of Resolved, there must be a resolution associated with the failure
+fact ifResolvedHAsResolution{
+	all failure: Failure| failure.state ! = Resolved implies #failure.resolution = 0
+}
+
+//English - all resolutions should be associated with a failure
+fact allResolutionsHaveFailure{
+	all res: Resolution | some fail: Failure | res in fail.resolution
 }
 
 
-//no two testCases should have the same description
-	//added disj to the one description that a testcase should have
+//ask if we including these, they were commented out
+//English - for all test cases, the description should be unique i.e. no test cases may have the same description
 fact uniqueDescriptionForEachTestCase{
 	no disj testCaseA, testCaseB : TestCase | some testCaseA.desc & testCaseB.desc
 }
 
-
-//a story can only belong to one feature
-fact storyOnlyOneFeature{
-	//all feature: Feature | lone feature.stories
-} 
-
-//a testcase can only belong to one test package (which implies that it cannot belong to another story outside of the test package)
-
-//if it is that a testcase exists, a test package should exist 
-fact testPackageExistIfTestCaseExist{
-	
-} 
-
-//once a test package exist there must be some feature it realates to 
-
-//there should be no empty test packages 
-fact noEmptyTestPackages{
-	
+//English - no shared descriptions between testcases and failures
+fact noTestCaseAndFailureSameDescription{
+	all testCase: TestCase, fails: Failure | no testCase.desc & fails.description
 }
 
-//each story should belong to a feature 
-fact noLooseStory{
-	//all story: Story | some feat: Feature| story in feat.stories
+//English - for all failures, the description should be unique i.e. no failures may have the same description
+fact uniqueFailureDescription{
+	all disj failure1,failure2: Failure | no failure1.description & failure2.description
 }
 
-pred M2 () {}
-//run f
 
-run M2 for 3
-//A failure should be related to the test case that discovered it 
+-- FUNCTIONS
+//fun getTestPackage[f :Feature]: set TestCase{
+//	f.stories.testCases
+//}
+
+-- PREDICATES
+
+//Instance of all relations in the model
+pred sanityCheck {
+	one System
+	some Feature
+	#Story  = 3
+	#TestCase> 3
+	some Input
+	some Output 
+	some Failure
+	some Description
+	some Resolution} 
+run sanityCheck for 6
+
+//instance where there is a story that has more than two test cases and more than two failures
+pred anInstance[s:Story]{
+	# s.testCases > 2
+	#s.testCases.failures > 2
+}run anInstance for 6 but 1 System
+
+//instance where there is a system with three features and atleast 3 stories have been written
+pred anInstance2[sys: System]{
+	#sys.allFeatures = 2
+	#sys.allFeatures.stories > 2
+}run anInstance2 for 5
+
+pred anInstance3[]{
+	one System
+	no Feature
+}run anInstance3 for 5
