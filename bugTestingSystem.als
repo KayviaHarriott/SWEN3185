@@ -20,23 +20,23 @@ one sig RVeryLow, RLow, RMedium, RHigh, RVeryHigh extends ReliabilityStatus {}
 
 sig Story {
 	testCases: set TestCase, 
-	priorityLevel: one Priority
+	priorityLevel: Priority
 }
 
 sig TestCase {
 	priorityLevel: one Priority, 
 	desc: Description, 
 	inputs: some Input,
-	expectedOutput: one Output,
-	actualOutput: one Output,
+	expectedOutput: Output,
+	actualOutput: Output,
 	failures: set Failure
 }
 
 sig Failure {
-	severityLevel: one Severity, 
+	severityLevel: Severity, 
 	resolution: lone Resolution, 
-	description: one Description, 
-	state: one State
+	description: Description, 
+	state: State
 }
 
 //breaking down resolution into the set of actions, maybe sig actions, and may contain
@@ -148,9 +148,9 @@ pred anInstance[s:Story]{
 pred anInstance2[sys: System]{
 	#sys.allFeatures = 2
 	#sys.allFeatures.stories > 2
-}run anInstance2 for 5
+}run anInstance2 for 5 but 1 System
 
 pred anInstance3[]{
 	one System
 	no Feature
-}run anInstance3 for 5
+}run anInstance3 for 5 but 1 System
