@@ -1,13 +1,13 @@
 module bugTrackingSystem
+open util/graph[Story]
 
 // SYSTEM ELEMENTS
 sig System { allFeatures: set Feature, reliabilityStat: lone ReliabilityStatus }
-//when doing an instance of the system you can run for 1 instance of the System, or the System set contains one thing
 
 sig Feature {stories: set Story, orderedStories: stories -> stories}
 
 abstract sig Priority {}
-one sig PLow, PMedium, PHigh extends Priority {}
+one sig Low, Medium, High extends Priority {}
 
 abstract sig Severity {}
 one sig Minor, Major, Critical extends Severity {}
@@ -38,11 +38,6 @@ sig Failure {
 	description: Description, 
 	state: State
 }
-
-//breaking down resolution into the set of actions, maybe sig actions, and may contain
-//an empty set, we can talk about similarities of test case resolution and for instance
-//same things down to resolve a test case but one has one of high and one of low, why should that be?
-//could say one test case is common with another one and resolution may apply to two test cases
 sig Resolution{
 	ResActions: some Action
 }
@@ -88,7 +83,7 @@ fact hasReliabilityStatIfHasFeature{
 		some sys.allFeatures implies #sys.reliabilityStat = 1
 		and no sys.allFeatures implies #sys.reliabilityStat = 0
 	}
-}//this is faulty but good start
+}
 
 //English - if a failure has a state of Resolved, there must be a resolution associated with the failure
 fact ifResolvedHAsResolution{
@@ -100,8 +95,6 @@ fact allResolutionsHaveFailure{
 	all res: Resolution | some fail: Failure | res in fail.resolution
 }
 
-
-//ask if we including these, they were commented out
 //English - for all test cases, the description should be unique i.e. no test cases may have the same description
 fact uniqueDescriptionForEachTestCase{
 	no disj testCaseA, testCaseB : TestCase | some testCaseA.desc & testCaseB.desc
@@ -111,17 +104,6 @@ fact uniqueDescriptionForEachTestCase{
 fact noTestCaseAndFailureSameDescription{
 	all testCase: TestCase, fails: Failure | no testCase.desc & fails.description
 }
-
-//English - for all failures, the description should be unique i.e. no failures may have the same description
-fact uniqueFailureDescription{
-	all disj failure1,failure2: Failure | no failure1.description & failure2.description
-}
-
-
--- FUNCTIONS
-//fun getTestPackage[f :Feature]: set TestCase{
-//	f.stories.testCases
-//}
 
 -- PREDICATES
 
@@ -133,10 +115,11 @@ pred sanityCheck {
 	#TestCase> 3
 	some Input
 	some Output 
-	some Failure
+	//some Failure
+	#Failure > 3
 	some Description
 	some Resolution} 
-run sanityCheck for 6
+run sanityCheck for 6 but 1 System
 
 //instance where there is a story that has more than two test cases and more than two failures
 pred anInstance[s:Story]{
@@ -154,3 +137,45 @@ pred anInstance3[]{
 	one System
 	no Feature
 }run anInstance3 for 5 but 1 System
+
+
+pred isHamiltonianPath  [g , hs: Story -> Story] {
+
+	//one System
+	//some Feature
+	//#Story > 4\
+
+	one System
+	some Feature
+	#Story  > 5 
+	#TestCase> 3
+	some Input
+	some Output 
+	#Failure > 3
+	some Description
+	some Resolution 
+
+	dom[g] + ran[g] = dom[hs] + ran[hs]
+	hs in g
+}
+
+run isHamiltonianPath for 10 but 1 System
+
+/* Returns true if hc is a hamiltonian cycle in g */
+//pred isHamiltonianCycle [g, hc: Node->Node] {
+
+ //  dom[g] + ran[g] = dom[hc] + ran[hc]
+
+ //  hc in g
+
+  // ring[h]
+
+ //}
+//Naomi Benjamin8:35 PM
+/* Returns true if hs is a Hamiltonian path in g */
+
+//pred isHamiltonianPathS [g: Node->Node, hs: seq Node] {
+
+ //  isHamiltonianPathR[g,convertSeqToRel[hs]]
+
+//}
