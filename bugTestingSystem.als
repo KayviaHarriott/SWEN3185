@@ -115,7 +115,6 @@ pred sanityCheck {
 	#TestCase> 3
 	some Input
 	some Output 
-	//some Failure
 	#Failure > 3
 	some Description
 	some Resolution} 
