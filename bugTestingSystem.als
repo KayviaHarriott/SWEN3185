@@ -80,14 +80,17 @@ fact oneTestCaseforaFailure{
 //English - if a system has at least one feature it must have a reliability status
 fact hasReliabilityStatIfHasFeature{
 	all sys: System| {
-		some sys.allFeatures implies #sys.reliabilityStat = 1
-		and no sys.allFeatures implies #sys.reliabilityStat = 0
+		some sys.allFeatures implies one sys.reliabilityStat
+		no sys.allFeatures implies #sys.reliabilityStat = 0
 	}
 }
 
 //English - if a failure has a state of Resolved, there must be a resolution associated with the failure
 fact ifResolvedHAsResolution{
-	all failure: Failure| failure.state ! = Resolved implies #failure.resolution = 0
+	all failure: Failure|{
+		failure.state ! = Resolved implies  no failure.resolution
+		failure.state = Resolved implies one failure.resolution
+	}
 }
 
 //English - all resolutions should be associated with a failure
@@ -105,17 +108,23 @@ fact noTestCaseAndFailureSameDescription{
 	all testCase: TestCase, fails: Failure | no testCase.desc & fails.description
 }
 
+//fact {all feature: Feature| 
+//	isHamiltonianPath[feature.stories, feature.orderedStories]
+//}
+
 -- PREDICATES
 
 //Instance of all relations in the model
 pred sanityCheck {
 	one System
-	some Feature
+	#Feature = 2
 	#Story  = 3
 	#TestCase> 3
-	some Input
-	some Output 
+	#Input = 3
+	#Output = 4
 	#Failure > 3
+	some failure: Failure | failure.state = Unresolved
+	some failure2: Failure | failure2.state = WorkInProgress
 	some Description
 	some Resolution} 
 run sanityCheck for 6 but 1 System
@@ -138,21 +147,11 @@ pred anInstance3[]{
 }run anInstance3 for 5 but 1 System
 
 
-pred isHamiltonianPath  [s , ms: Story -> Story] {
-	#Feature = 2
+pred isHamiltonianPath  [s: set Story , ms: Story -> Story] {
 	#Story  =  5 
-	#TestCase> 3
-	some f: Failure | f.state = WorkInProgress
-	some f2: Failure | f2.state = Unresolved
-	#Failure > 3
-	some Description
-	some Resolution 
-	
 	tree[ms]
 	all n: innerNodes[ms] + leaves[ms] | #pre[ms, n] <= 1
 	all n: innerNodes[ms] + roots[ms] | #post[ms, n] = 1
-	dom[s] + ran[s] = dom[ms] + ran[ms]
-	ms in s
 }
 run isHamiltonianPath for 10 but 1 System
 
