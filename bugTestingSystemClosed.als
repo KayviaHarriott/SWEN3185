@@ -45,6 +45,11 @@ sig Resolution{
 sig Input,Output, Description, Action {}
 
 
+sig BugTracking{
+	
+}
+
+
 -- FACTS
 
 //English - each story should belong to a feature 
