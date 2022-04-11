@@ -97,24 +97,16 @@ fact { all bt: BugTracking| inv[bt] }
 --OPERATIONS
 pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Story, priority: Priority] {
 	//preconditions
-	--story must not already exist
-	story not in preBT.stories 
-	--feature that the story is being added to must exist 
-	feature in preBT.features
-	--story not in story order 
-	story not in dom[preBT.storyOrder] + ran[preBT.storyOrder]
-	-- story not already associated with a feature
-	no preBT.recordedStories.story
+	story not in preBT.stories  --story must not already exist
+	feature in preBT.features --feature that the story is being added to must exist 
+	story not in dom[preBT.storyOrder] + ran[preBT.storyOrder] --story not in story order 
+	no preBT.recordedStories.story -- story not already associated with a feature
 
 	//postconditions
-	--story must now exist
-	postBT.stories = preBT.stories + story
-	--story must now exist in story order 
-	dom[postBT.storyOrder] +ran [postBT.storyOrder] = (dom[preBT.storyOrder] +ran [preBT.storyOrder] ) + story
-	--story must be recorded to have its set priority 
-	story.(univ.recordedPriorityS) = priority
-	--story must now be associated with the given story 
-	story in feature.(postBT.recordedStories)
+	postBT.stories = preBT.stories + story --story must now exist
+	dom[postBT.storyOrder] +ran [postBT.storyOrder] = (dom[preBT.storyOrder] +ran [preBT.storyOrder] ) + story --story must now exist in story order 
+	story.(univ.recordedPriorityS) = priority --story must be recorded to have its set priority 
+	story in feature.(postBT.recordedStories) --story must now be associated with the given story 
 		
 	//frameconditions
 	preBT != postBT
