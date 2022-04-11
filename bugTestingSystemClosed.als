@@ -201,7 +201,7 @@ assert addStoryToFeaturePreserves{
 	all preBT, postBT: BugTracking, f: Feature, s: Story, p: Priority  |
 		inv[preBT] and addStoryToFeature[preBT, postBT, f, s, p]
 			implies inv[postBT]
-} check addStoryToFeaturePreserves
+} check addStoryToFeaturePreserves for 7 expect 0
 
 -- FUNCTIONS
 
