@@ -2,8 +2,6 @@ module bugTrackingSystem
 open util/graph[Story]
 
 // SYSTEM ELEMENTS
-sig System { allFeatures: set Feature, reliabilityStat: lone ReliabilityStatus }
-
 sig Feature, Story, TestCase, Failure, Resolution, Input,Output, Description, Action {}
 
 abstract sig Priority {}
