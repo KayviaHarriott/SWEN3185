@@ -55,7 +55,7 @@ sig BugTracking{
 
 --- PREDICATES
 pred inv[bt: BugTracking]{ 
-	all story: bt.stories| some recordedStories.story
+	all story: bt.stories| some bt.recordedStories.story
 	--all disj s1, s2: bt.stories | no univ.(recordedStories.s1) & univ.(recordedStories.s2) 
 	
 	all testcase: bt.testCases| some recordedTestCases.testcase
@@ -102,16 +102,28 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 	--feature that the story is being added to must exist 
 	feature in preBT.features
 	--story not in story order 
-	
-	
+	story not in dom[preBT.storyOrder] + ran[preBT.storyOrder]
+	-- story not already associated with a feature
+	no preBT.recordedStories.story
+
 	//postconditions
 	--story must now exist
 	postBT.stories = preBT.stories + story
 	--story must now exist in story order 
-	
-
+	dom[postBT.storyOrder] +ran [postBT.storyOrder] = (dom[preBT.storyOrder] +ran [preBT.storyOrder] ) + story
+	--story must be recorded to have its set priority 
+	story.(univ.recordedPriorityS) = priority
+	--story must now be associated with the given story 
+	story in feature.(postBT.recordedStories)
+		
 	//frameconditions
-
+	preBT != postBT
+	preBT.features = postBT.features
+	preBT.failures = postBT.failures
+	#preBT.testCases = #postBT.testCases
+	preBT.inputs = postBT.inputs
+	preBT.outputs = postBT.outputs
+	preBT.descriptions = postBT.descriptions
 }run addStoryToFeature for 4 but 2 BugTracking expect 1
 
 
@@ -193,6 +205,11 @@ assert initEstablishes{
 	all bt: BugTracking| init[bt] implies inv[bt]
 }check initEstablishes
 
+assert addStoryToFeaturePreserves{
+	all preBT, postBT: BugTracking, f: Feature, s: Story, p: Priority  |
+		inv[preBT] and addStoryToFeature[preBT, postBT, f, s, p]
+			implies inv[postBT]
+} check addStoryToFeaturePreserves
 
 -- FUNCTIONS
 
