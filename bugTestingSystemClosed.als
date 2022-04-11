@@ -95,7 +95,52 @@ fact { all bt: BugTracking| inv[bt] }
 
 
 --OPERATIONS
+pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Story, priority: Priority] {
+	//preconditions
+	--story must not already exist
+	story not in preBT.stories 
+	--feature that the story is being added to must exist 
+	feature in preBT.features
+	--story not in story order 
+	
+	
+	//postconditions
+	--story must now exist
+	postBT.stories = preBT.stories + story
+	--story must now exist in story order 
+	
 
+	//frameconditions
+
+}run addStoryToFeature for 4 but 2 BugTracking expect 1
+
+
+pred  changeStateToResolved[]{
+	//preconditions
+
+	//postconditions
+
+	//frameconditions
+}
+	/*
+		Given a Failure with some state (Unresolved or WorkInProgress), we want to change it to being resolved
+		to so this we need the pre and post state, the failure to be adjusted, and the resolution that has been found 
+		Therefore this operation would consume the predicate "addResolutionToFailure
+	*/
+
+pred  addResolutionToFailure[]{
+	//preconditions
+
+	//postconditions
+
+	//frameconditions
+}
+	/*
+		Given a Failure whose state is not being changed to resolved, we want to add the resolution to that failure so as to 
+			1. not violate our invariants
+			2. record the resolution that has caused the failure to be resolved
+		To do this we need the pre and post state, the failure, the resolution and the actions taken to arrive at that resolution
+	*/
 
 -- INSTANCES
 
@@ -141,6 +186,12 @@ pred sanityCheck{
 		#bt.outputs = 2
 	}
 } run sanityCheck for 6 but 1 BugTracking expect 1
+
+
+--ASSERTIONS
+assert initEstablishes{
+	all bt: BugTracking| init[bt] implies inv[bt]
+}check initEstablishes
 
 
 -- FUNCTIONS
