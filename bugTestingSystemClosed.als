@@ -58,7 +58,7 @@ pred inv[bt: BugTracking]{
 	all story: bt.stories| some bt.recordedStories.story
 	--all disj s1, s2: bt.stories | no univ.(recordedStories.s1) & univ.(recordedStories.s2) 
 	
-	all testcase: bt.testCases| some recordedTestCases.testcase
+	all testcase: bt.testCases| some bt.recordedTestCases.testcase
 	no disj t1,t2: bt.testCases | some recordedTestCases.t1 & recordedTestCases.t2
 	
 	all failure: bt.failures| some recordedFailures.failure 
@@ -119,12 +119,18 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 }run addStoryToFeature for 4 but 2 BugTracking expect 1
 
 
-pred  changeStateToResolved[]{
+pred  changeStateToResolved[preBT, postBT: BugTracking, failure: Failure]{
 	//preconditions
+	
 
 	//postconditions
 
+
 	//frameconditions
+	preBT != postBT
+	preBT.features = postBT.features
+	preBT.failures = postBT.failures
+
 }
 	/*
 		Given a Failure with some state (Unresolved or WorkInProgress), we want to change it to being resolved
@@ -132,13 +138,29 @@ pred  changeStateToResolved[]{
 		Therefore this operation would consume the predicate "addResolutionToFailure
 	*/
 
-pred  addResolutionToFailure[]{
+pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure]{
+//preBT, postBT: BugTracking, feature: Feature, story: Story, priority: Priority
 	//preconditions
+	resolution not in preBT.resolutions
+	failure in preBT.failures
+	failure -> resolution not in preBT.recordedResolution --resolution not already recorded
+	some testcase: preBT.recordedFailures | some testcase.failure
+//	failure in preBT.recordedFailures
 
 	//postconditions
-
+	resolution in postBT.resolutions --resolution must now be in resolutions
+	failure -> resolution in postBT.recordedResolution--must exist in recorded resolution
+	
 	//frameconditions
-}
+/*	preBT != postBT
+	preBT.features = postBT.features
+	preBT.failures = postBT.failures
+	#preBT.testCases = #postBT.testCases
+	preBT.inputs = postBT.inputs
+	preBT.outputs = postBT.outputs
+	preBT.descriptions = postBT.descriptions */
+
+}run addResolutionToFailure for 4 but 2 BugTracking expect 1
 	/*
 		Given a Failure whose state is not being changed to resolved, we want to add the resolution to that failure so as to 
 			1. not violate our invariants
