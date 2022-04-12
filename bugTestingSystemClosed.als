@@ -75,6 +75,9 @@ pred inv[bt: BugTracking]{
 
 	some bt.features implies one bt.reliabilityStat 
 	no bt.features implies no bt.reliabilityStat 
+	all testcase: bt.testCases, description: bt.descriptions, failure: Failure | testcase -> description in bt.recordedDescT or failure -> description in bt.recordedDescF
+	//all testcase: bt.testCases, stories: Story |  stories -> testcase in bt.recordedTestCases
+
 
 	---
 	all failure: bt.failures| failure.(univ.inState) = Resolved implies one failure.(univ.recordedResolution)
@@ -119,7 +122,7 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 }run addStoryToFeature for 4 but 2 BugTracking expect 1
 
 
-pred  changeStateToResolved[preBT, postBT: BugTracking, failure: Failure]{
+pred  LUCAS_UPDATE_HERE[]{
 	//preconditions
 	
 
@@ -133,32 +136,38 @@ pred  changeStateToResolved[preBT, postBT: BugTracking, failure: Failure]{
 
 }
 	/*
-		Given a Failure with some state (Unresolved or WorkInProgress), we want to change it to being resolved
-		to so this we need the pre and post state, the failure to be adjusted, and the resolution that has been found 
-		Therefore this operation would consume the predicate "addResolutionToFailure
+		LUCAS UPDATE HERE
 	*/
 
 pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure]{
 //preBT, postBT: BugTracking, feature: Feature, story: Story, priority: Priority
 	//preconditions
 	resolution not in preBT.resolutions
-	failure in preBT.failures
+	//instate should be unresolved
+	//bt failure resolved
+	some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState ed
+
 	failure -> resolution not in preBT.recordedResolution --resolution not already recorded
 	some testcase: preBT.recordedFailures | some testcase.failure
-//	failure in preBT.recordedFailures
 
 	//postconditions
 	resolution in postBT.resolutions --resolution must now be in resolutions
 	failure -> resolution in postBT.recordedResolution--must exist in recorded resolution
 	
 	//frameconditions
-/*	preBT != postBT
+	preBT != postBT
 	preBT.features = postBT.features
 	preBT.failures = postBT.failures
 	#preBT.testCases = #postBT.testCases
 	preBT.inputs = postBT.inputs
 	preBT.outputs = postBT.outputs
-	preBT.descriptions = postBT.descriptions */
+	preBT.descriptions = postBT.descriptions
+	preBT.stories= postBT.stories
+	preBT.testCases = postBT.testCases
+	--story order shouldn't change
+	
+
+	
 
 }run addResolutionToFailure for 4 but 2 BugTracking expect 1
 	/*
@@ -224,6 +233,13 @@ assert addStoryToFeaturePreserves{
 		inv[preBT] and addStoryToFeature[preBT, postBT, f, s, p]
 			implies inv[postBT]
 } check addStoryToFeaturePreserves for 7 expect 0
+
+
+assert addResolutionToFailurePreserves{
+	all preBT, postBT: BugTracking,r: Resolution, f: Failure |
+		inv[preBT] and addResolutionToFailure[preBT, postBT, r, f]
+			implies inv[postBT]
+} check addResolutionToFailurePreserves for 7 expect 0
 
 -- FUNCTIONS
 
