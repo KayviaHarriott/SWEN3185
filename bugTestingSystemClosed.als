@@ -62,7 +62,6 @@ pred inv[bt: BugTracking]{
 	no disj t1,t2: bt.testCases | some recordedTestCases.t1 & recordedTestCases.t2
 	
 	all failure: bt.failures| some recordedFailures.failure 
-	--all failure: bt.failures| some rf: bt.recordedFailures| failure in ran[rf]
 	all res: bt.resolutions| some recordedResolution.res
 	all disj r1,r2: bt.resolutions| no recordedResolution.r1 & recordedResolution.r2
 	
@@ -77,6 +76,9 @@ pred inv[bt: BugTracking]{
 	some bt.features implies one bt.reliabilityStat 
 	no bt.features implies no bt.reliabilityStat 
 	all testcase: bt.testCases, description: bt.descriptions, failure: Failure | testcase -> description in bt.recordedDescT or failure -> description in bt.recordedDescF
+	//all testcase: bt.testCases, stories: Story |  stories -> testcase in bt.recordedTestCases
+
+
 	---
 	all failure: bt.failures| failure.(univ.inState) = Resolved implies one failure.(univ.recordedResolution)
 	all failure: bt.failures| failure.(univ.inState) != Resolved implies no failure.(univ.recordedResolution)
@@ -187,12 +189,14 @@ pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: St
 	feature in preBT.features --feature that the story is being added to must exist 
 	testCase not in preBT.testCases -- test case must not exist
 	story in dom[preBT.storyOrder] + ran[preBT.storyOrder] --story in story order
+	no preBT.recordedTestCases.testCase --test case must not be associated with any story
 	//postconditions
 	postBT.testCases = postBT.testCases + testCase --test case must now exist
+	testCase in story.(postBT.recordedTestCases) -- test case is now associated with a story
 	
 	
 	//frameconditions
-	preBT != postBT
+	preBT != postBT 
 	preBT.features = postBT.features
 	preBT.failures = postBT.failures
 	#preBT.stories = #postBT.stories
@@ -206,6 +210,7 @@ pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: St
 	*/
 
 pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure]{
+//preBT, postBT: BugTracking, feature: Feature, story: Story, priority: Priority
 	//preconditions
 	resolution not in preBT.resolutions
 	//instate should be unresolved
@@ -213,7 +218,7 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState 
 
 	failure -> resolution not in preBT.recordedResolution --resolution not already recorded
-	---some testcase: preBT.recordedFailures | some testcase.failure
+	some testcase: preBT.recordedFailures | some testcase.failure
 
 	//postconditions
 	resolution in postBT.resolutions --resolution must now be in resolutions
@@ -229,7 +234,18 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	preBT.descriptions = postBT.descriptions
 	preBT.stories= postBT.stories
 	preBT.testCases = postBT.testCases
+	--story order shouldn't change
+	
+
+	
+
 }run addResolutionToFailure for 4 but 2 BugTracking expect 1
+	/*
+		Given a Failure whose state is not being changed to resolved, we want to add the resolution to that failure so as to 
+			1. not violate our invariants
+			2. record the resolution that has caused the failure to be resolved
+		To do this we need the pre and post state, the failure, the resolution and the actions taken to arrive at that resolution
+	*/
 
 -- INSTANCES
 
@@ -266,13 +282,13 @@ run init for 7 but 1 BugTracking expect 1
 
 pred sanityCheck{
 	some bt: BugTracking{
-		some bt.features
-		some bt.stories
-		some bt.testCases
-		some bt.failures
-		some bt.resolutions
-		some bt.actions
-		some bt.outputs 
+		#bt.features = 2
+		#bt.stories = 3
+		#bt.testCases = 2	
+		#bt.failures > 2
+		#bt.resolutions > 2
+		#bt.actions > 2
+		#bt.outputs = 2
 	}
 } run sanityCheck for 6 but 1 BugTracking expect 1
 
