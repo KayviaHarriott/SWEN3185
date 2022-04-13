@@ -171,12 +171,7 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 	preBT.inputs = postBT.inputs
 	preBT.outputs = postBT.outputs
 	preBT.descriptions = postBT.descriptions
-<<<<<<< HEAD
-	preBT.resolutions = postBT.resolutions
-}run addStoryToFeature for 4 but 2 BugTracking expect 1
-=======
 }//run addStoryToFeature for 4 but 2 BugTracking expect 1
->>>>>>> 320eb082b5b52a507db7aa9249d5e5df81a50960
 
 
 pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: Story, testCase: TestCase, priority: Priority]{
@@ -192,11 +187,6 @@ pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: St
 
 
 	//frameconditions
-<<<<<<< HEAD
-	//preBT != postBT
-//	preBT.features = postBT.features
-//	preBT.failures = postBT.failures
-=======
 	preBT != postBT
 	preBT.features = postBT.features
 	preBT.failures = postBT.failures
@@ -204,7 +194,6 @@ pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: St
 	#preBT.features = #postBT.features
 	
 	
->>>>>>> 320eb082b5b52a507db7aa9249d5e5df81a50960
 
 } run addTestCaseToStory for 4 but 2 BugTracking expect 1
 	/*
