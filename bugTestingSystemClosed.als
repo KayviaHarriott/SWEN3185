@@ -130,9 +130,9 @@ pred  LUCAS_UPDATE_HERE[]{
 
 
 	//frameconditions
-	preBT != postBT
-	preBT.features = postBT.features
-	preBT.failures = postBT.failures
+	//preBT != postBT
+//	preBT.features = postBT.features
+//	preBT.failures = postBT.failures
 
 }
 	/*
@@ -145,7 +145,7 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	resolution not in preBT.resolutions
 	//instate should be unresolved
 	//bt failure resolved
-	some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState ed
+	some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState 
 
 	failure -> resolution not in preBT.recordedResolution --resolution not already recorded
 	some testcase: preBT.recordedFailures | some testcase.failure
@@ -165,17 +165,7 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	preBT.stories= postBT.stories
 	preBT.testCases = postBT.testCases
 	--story order shouldn't change
-	
-
-	
-
 }run addResolutionToFailure for 4 but 2 BugTracking expect 1
-	/*
-		Given a Failure whose state is not being changed to resolved, we want to add the resolution to that failure so as to 
-			1. not violate our invariants
-			2. record the resolution that has caused the failure to be resolved
-		To do this we need the pre and post state, the failure, the resolution and the actions taken to arrive at that resolution
-	*/
 
 -- INSTANCES
 
@@ -212,13 +202,13 @@ run init for 7 but 1 BugTracking expect 1
 
 pred sanityCheck{
 	some bt: BugTracking{
-		#bt.features = 2
-		#bt.stories = 3
-		#bt.testCases = 2	
-		#bt.failures > 2
-		#bt.resolutions > 2
-		#bt.actions > 2
-		#bt.outputs = 2
+		some bt.features
+		some bt.stories
+		some bt.testCases
+		some bt.failures
+		some bt.resolutions
+		some bt.actions
+		some bt.outputs 
 	}
 } run sanityCheck for 6 but 1 BugTracking expect 1
 
