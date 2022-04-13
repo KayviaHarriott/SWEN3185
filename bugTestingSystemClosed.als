@@ -130,13 +130,18 @@ pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: St
 	story in dom[preBT.storyOrder] + ran[preBT.storyOrder] --story in story order
 	//postconditions
 	postBT.testCases = postBT.testCases + testCase --test case must now exist
-	#preBT.stories = #postBT.stories
+	
+	
 
 
 	//frameconditions
 	preBT != postBT
 	preBT.features = postBT.features
 	preBT.failures = postBT.failures
+	#preBT.stories = #postBT.stories
+	#preBT.features = #postBT.features
+	
+	
 
 } run addTestCaseToStory for 4 but 2 BugTracking expect 1
 	/*
