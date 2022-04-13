@@ -56,8 +56,7 @@ sig BugTracking{
 
 --- PREDICATES
 pred inv[bt: BugTracking]{ 
-	all story: bt.stories| some bt.recordedStories.story
-	--all disj s1, s2: bt.stories | no univ.(recordedStories.s1) & univ.(recordedStories.s2) 
+	all story: bt.stories| one bt.recordedStories.story
 	
 	all testcase: bt.testCases| some bt.recordedTestCases.testcase
 	no disj t1,t2: bt.testCases | some recordedTestCases.t1 & recordedTestCases.t2
@@ -124,9 +123,6 @@ private pred noChange1[preBT, postBT: BugTracking] {
 }
 
 pred skip[preBT, postBT: BugTracking] {
-	--preBT.slirs = postBT.slirs
-	--preBT.requests = postBT.requests
-	--preBT.sharedWith = postBT.sharedWith
 	noChange1[preBT, postBT]
 }
 run skip for 4 but 2 BugTracking expect 1
@@ -140,11 +136,11 @@ fact traces {
 	inv[bugT/first]
 	all bt: BugTracking - bugT/last |
 		let btNext = bt.next |
-			some bt1, bt2: BugTracking, f: Feature,  s: Story, p: Priority, r: Resolution, fai: Failure|
+			some bt1, bt2: BugTracking, f: Feature,  s: Story, p: Priority, rr: Resolution, fai: Failure|
 		skip[bt, btNext] or
-		addStoryToFeature[bt1, bt2, f, s, p] or
-		addResolutionToFailure[bt1, bt2, r, fai] --or
-		--Lucas's function
+			addStoryToFeature[bt1, bt2, f, s, p] or
+				addResolutionToFailure[bt1, bt2, rr, fai] --or
+					--Lucas's function
 }run {} for 7 but 5 BugTracking expect 1
 
 
@@ -154,24 +150,35 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 	story not in preBT.stories  --story must not already exist
 	feature in preBT.features --feature that the story is being added to must exist 
 	story not in dom[preBT.storyOrder] + ran[preBT.storyOrder] --story not in story order 
-	no preBT.recordedStories.story -- story not already associated with a feature
+	feature -> story not in  preBT.recordedStories -- story not already associated with a feature
+	story -> priority not in preBT.recordedPriorityS
 
 	//postconditions
 	postBT.stories = preBT.stories + story --story must now exist
+	postBT.recordedStories = preBT.recordedStories + (feature -> story )
 	dom[postBT.storyOrder] +ran [postBT.storyOrder] = (dom[preBT.storyOrder] +ran [preBT.storyOrder] ) + story --story must now exist in story order 
-	story.(univ.recordedPriorityS) = priority --story must be recorded to have its set priority 
-	story in feature.(postBT.recordedStories) --story must now be associated with the given story 
+	story -> priority in postBT.recordedPriorityS
+	
+	
+	--story.(univ.recordedPriorityS)= priority --story must be recorded to have its set priority 
+	--feature -> story  in postBT.recordedStories --story must now be associated with the given story 
 		
 	//frameconditions
 	preBT != postBT
-	preBT.features = postBT.features
-	preBT.failures = postBT.failures
-	#preBT.testCases = #postBT.testCases
+	preBT.recordedFailures = postBT.recordedFailures
+	preBT.recordedTestCases = postBT.recordedTestCases
+	preBT.resolutions = postBT.resolutions
 	preBT.testCases = postBT.testCases
-	preBT.inputs = postBT.inputs
-	preBT.outputs = postBT.outputs
-	preBT.descriptions = postBT.descriptions
-}//run addStoryToFeature for 4 but 2 BugTracking expect 1
+	preBT.recordedDescF = postBT.recordedDescF
+	preBT.actualOutput = postBT.actualOutput
+	preBT.recordedDescT = postBT.recordedDescT
+	preBT.recordedPriorityT = postBT.recordedPriorityT
+	preBT.recordedActions = postBT.recordedActions
+	preBT.recordedResolution = postBT.recordedResolution
+	preBT.expectedOutput = postBT.expectedOutput
+	preBT.recordedInput = postBT.recordedInput 
+	preBT.inState = postBT.inState
+}run addStoryToFeature for 4 but 2 BugTracking expect 1
 
 
 pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: Story, testCase: TestCase, priority: Priority]{
@@ -184,8 +191,6 @@ pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: St
 	postBT.testCases = postBT.testCases + testCase --test case must now exist
 	
 	
-
-
 	//frameconditions
 	preBT != postBT
 	preBT.features = postBT.features
