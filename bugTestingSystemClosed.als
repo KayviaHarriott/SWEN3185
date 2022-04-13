@@ -171,23 +171,42 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 	preBT.inputs = postBT.inputs
 	preBT.outputs = postBT.outputs
 	preBT.descriptions = postBT.descriptions
+<<<<<<< HEAD
 	preBT.resolutions = postBT.resolutions
 }run addStoryToFeature for 4 but 2 BugTracking expect 1
+=======
+}//run addStoryToFeature for 4 but 2 BugTracking expect 1
+>>>>>>> 320eb082b5b52a507db7aa9249d5e5df81a50960
 
 
-pred  LUCAS_UPDATE_HERE[]{
+pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: Story, testCase: TestCase, priority: Priority]{
 	//preconditions
-	
-
+	story in preBT.stories  --story must already exist
+	feature in preBT.features --feature that the story is being added to must exist 
+	testCase not in preBT.testCases -- test case must not exist
+	story in dom[preBT.storyOrder] + ran[preBT.storyOrder] --story in story order
 	//postconditions
+	postBT.testCases = postBT.testCases + testCase --test case must now exist
+	
+	
 
 
 	//frameconditions
+<<<<<<< HEAD
 	//preBT != postBT
 //	preBT.features = postBT.features
 //	preBT.failures = postBT.failures
+=======
+	preBT != postBT
+	preBT.features = postBT.features
+	preBT.failures = postBT.failures
+	#preBT.stories = #postBT.stories
+	#preBT.features = #postBT.features
+	
+	
+>>>>>>> 320eb082b5b52a507db7aa9249d5e5df81a50960
 
-}
+} run addTestCaseToStory for 4 but 2 BugTracking expect 1
 	/*
 		LUCAS UPDATE HERE
 	*/
@@ -205,7 +224,7 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	//postconditions
 	resolution in postBT.resolutions --resolution must now be in resolutions
 	failure -> resolution in postBT.recordedResolution--must exist in recorded resolution
-	
+	some TestCase -> postBT.stories
 	//frameconditions
 	preBT != postBT
 	preBT.features = postBT.features
