@@ -76,7 +76,6 @@ pred inv[bt: BugTracking]{
 	some bt.features implies one bt.reliabilityStat 
 	no bt.features implies no bt.reliabilityStat 
 	all testcase: bt.testCases, description: bt.descriptions, failure: Failure | testcase -> description in bt.recordedDescT or failure -> description in bt.recordedDescF
-	//all testcase: bt.testCases, stories: Story |  stories -> testcase in bt.recordedTestCases
 
 	---
 	all failure: bt.failures| failure.(univ.inState) = Resolved implies one failure.(univ.recordedResolution)
@@ -148,20 +147,20 @@ fact traces {
 --OPERATIONS
 pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Story, priority: Priority] {
 	//preconditions
-	story not in preBT.stories  --story must not already exist
-	feature in preBT.features --feature that the story is being added to must exist 
-	story not in dom[preBT.storyOrder] + ran[preBT.storyOrder] --story not in story order 
-	feature -> story not in  preBT.recordedStories -- story not already associated with a feature
+	story not in preBT.stories  //story must not already exist
+	feature in preBT.features //feature that the story is being added to must exist 
+	story not in dom[preBT.storyOrder] + ran[preBT.storyOrder] //story not in story order 
+	feature -> story not in  preBT.recordedStories // story not already associated with a feature
 	story -> priority not in preBT.recordedPriorityS
 
 	//postconditions
-	postBT.stories = preBT.stories + story --story must now exist
+	postBT.stories = preBT.stories + story //story must now exist
 	postBT.recordedStories = preBT.recordedStories + (feature -> story )
-	dom[postBT.storyOrder] +ran [postBT.storyOrder] = (dom[preBT.storyOrder] +ran [preBT.storyOrder] ) + story --story must now exist in story order 
+	dom[postBT.storyOrder] +ran [postBT.storyOrder] = (dom[preBT.storyOrder] +ran [preBT.storyOrder] ) + story //story must now exist in story order 
 	story -> priority in postBT.recordedPriorityS
 	story not in ran[preBT.recordedStories - feature -> story]
-	story.(univ.recordedPriorityS)= priority --story must be recorded to have its set priority 
-	feature -> story  in postBT.recordedStories --story must now be associated with the given story 
+	story.(univ.recordedPriorityS)= priority //story must be recorded to have its set priority 
+	feature -> story  in postBT.recordedStories //story must now be associated with the given story 
 		
 	//frameconditions
 	preBT != postBT
@@ -194,14 +193,15 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 
 pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: Story, testCase: TestCase, priority: Priority]{
 	//preconditions
-	story in preBT.stories  --story must already exist
-	feature in preBT.features --feature that the story is being added to must exist 
-	testCase not in preBT.testCases -- test case must not exist
-	story in dom[preBT.storyOrder] + ran[preBT.storyOrder] --story in story order
-	no preBT.recordedTestCases.testCase --test case must not be associated with any story
+	story in preBT.stories  //story must already exist
+	feature in preBT.features //feature that the story is being added to must exist 
+	testCase not in preBT.testCases // test case must not exist
+	story in dom[preBT.storyOrder] + ran[preBT.storyOrder] //story in story order
+	no preBT.recordedTestCases.testCase //test case must not be associated with any story
+
 	//postconditions
-	postBT.testCases = postBT.testCases + testCase --test case must now exist
-	testCase in story.(postBT.recordedTestCases) -- test case is now associated with a story
+	postBT.testCases = postBT.testCases + testCase //test case must now exist
+	testCase in story.(postBT.recordedTestCases) // test case is now associated with a story
 	
 	//frameconditions
 	preBT != postBT 
@@ -226,10 +226,10 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState 
 
 	failure -> resolution not in preBT.recordedResolution --resolution not already recorded
-	--some testcase: preBT.recordedFailures | some testcase.failure
+	--some testcase: preBT.recordedFailures | some testcase.failure (hey kayvia sumn is up with this its giving a skolomizing error)
 
 	//postconditions
-	resolution in postBT.resolutions --resolution must now be in resolutions
+	resolution in postBT.resolutions //resolution must now be in resolutions
 	failure -> resolution in postBT.recordedResolution--must exist in recorded resolution
 	some TestCase -> postBT.stories
 	//frameconditions
