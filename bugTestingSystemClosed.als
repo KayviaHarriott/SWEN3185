@@ -180,14 +180,16 @@ pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: St
 	feature in preBT.features --feature that the story is being added to must exist 
 	testCase not in preBT.testCases -- test case must not exist
 	story in dom[preBT.storyOrder] + ran[preBT.storyOrder] --story in story order
+	no preBT.recordedTestCases.testCase 
 	//postconditions
 	postBT.testCases = postBT.testCases + testCase --test case must now exist
+	testCase in story.(postBT.recordedTestCases)
 	
 	
 
 
 	//frameconditions
-	preBT != postBT
+	preBT != postBT 
 	preBT.features = postBT.features
 	preBT.failures = postBT.failures
 	#preBT.stories = #postBT.stories
