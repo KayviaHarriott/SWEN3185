@@ -191,24 +191,43 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 }run addStoryToFeature for 4 but 2 BugTracking expect 1
 
 
-pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: Story, testCase: TestCase, priority: Priority]{
+pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: Story, testCase: TestCase, priority: Priority, description: Description]{
 	//preconditions
-	story in preBT.stories  //story must already exist
-	feature in preBT.features //feature that the story is being added to must exist 
-	testCase not in preBT.testCases // test case must not exist
+	story in preBT.stories  -- story must already exist
+	feature in preBT.features -- feature must already exist 
+	feature -> story  in preBT.recordedStories -- feature and story association should exist
+	story -> testCase not in preBT.recordedTestCases	-- testcase must not belong to a story already
+	//testCase not in preBT.testCases // test case must not exist || test case should exist, just that it's not added to story
 	story in dom[preBT.storyOrder] + ran[preBT.storyOrder] //story in story order
-	no preBT.recordedTestCases.testCase //test case must not be associated with any story
+	testCase -> description in preBT.recordedDescT
+	
+--	no preBT.recordedTestCases.testCase //test case must not be associated with any story
+//	Failure -> Resolution not in preBT.recordedResolution
+//	Resolution not in preBT.resolutions
 
 	//postconditions
 	postBT.testCases = postBT.testCases + testCase //test case must now exist
 	testCase in story.(postBT.recordedTestCases) // test case is now associated with a story
-	
+//	Failure -> Resolution  in preBT.recordedResolution
+
+
+
 	//frameconditions
 	preBT != postBT 
+//	preBT.failures = postBT.failures
+	preBT.recordedStories = postBT.recordedStories
+	preBT.stories = postBT.stories
 	preBT.features = postBT.features
-	preBT.failures = postBT.failures
-	#preBT.stories = #postBT.stories
-	#preBT.features = #postBT.features
+	preBT.reliabilityStat = postBT.reliabilityStat
+	preBT.defaultPriorities = postBT.defaultPriorities
+	preBT.severityLev = postBT.severityLev
+//	Failure -> Resolution  in preBT.recordedResolution
+	preBT.defaultSeverities = postBT.defaultSeverities
+	preBT.recordedStories = postBT.recordedStories
+//	preBT.defaultStates = postBT.defaultStates
+//	preBT.resolutions = postBT.resolutions
+//	some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState 
+//	preBT.inState = postBT.inState
 	
 	
 
@@ -222,8 +241,8 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	resolution not in preBT.resolutions -- the resolution should not exist in the resolutions
 	failure -> resolution not in preBT.recordedResolution -- must not already exist in recorded resolution
 	resolution -> action not in preBT.recordedActions -- resolution must not be in recordedResolutions
-	testcase -> description in preBT.recordedDescT -- all test cases have description
-	failure -> description in preBT.recordedDescF -- all failures should have description
+	//testcase -> description in preBT.recordedDescT -- all test cases have description
+//	failure -> description in preBT.recordedDescF -- all failures should have description
 	 -- inState should not be resolved
 	
 	//some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState 
@@ -240,12 +259,26 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	preBT.features = postBT.features
 	preBT.failures = postBT.failures
 	#preBT.testCases = #postBT.testCases
+	preBT.stories= postBT.stories
+	preBT.reliabilityStat = postBT.reliabilityStat
+	#preBT.testCases = #postBT.testCases
+	preBT.failures = postBT.failures
+	preBT.actions = postBT.actions
+	preBT.defaultPriorities = postBT.defaultPriorities
+	preBT.defaultSeverities = postBT.defaultSeverities
+	preBT.defaultStates = postBT.defaultStates
+	preBT.descriptions = postBT.descriptions
 	preBT.inputs = postBT.inputs
 	preBT.outputs = postBT.outputs
-	preBT.descriptions = postBT.descriptions
-	preBT.stories= postBT.stories
+		preBT.recordedTestCases = postBT.recordedTestCases 
+		preBT.recordedFailures = postBT.recordedFailures
+	--	preBT.inState != postBT.inState
+	preBT.severityLev = postBT.severityLev 
 	preBT.recordedDescF = postBT.recordedDescF
-//	preBT.inState != postBT.inState
+		preBT.recordedDescT = postBT.recordedDescT
+		preBT.actualOutput = postBT.actualOutput
+		preBT.expectedOutput = postBT.expectedOutput
+		preBT.recordedInput = postBT.recordedInput 
 	
 
 	
@@ -315,12 +348,19 @@ assert addStoryToFeaturePreserves{
 			implies inv[postBT]
 } check addStoryToFeaturePreserves for 7 expect 0
 
-
+//addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: Story, testCase: TestCase, priority: Priority]
 assert addResolutionToFailurePreserves{
 	all preBT, postBT: BugTracking,r: Resolution, f: Failure, a: Action, d: Description, t: TestCase, s: State |
 		inv[preBT] and addResolutionToFailure[preBT, postBT, r, f, a, d, t, s]
 			implies inv[postBT]
 } check addResolutionToFailurePreserves for 7 expect 0
+
+
+assert addTestCaseToStory{
+	all preBT, postBT: BugTracking, f: Feature, s: Story, t: TestCase, p: Priority, d: Description |
+		inv[preBT] and addTestCaseToStory[preBT, postBT, f, s, t, p, d]
+			implies inv[postBT]
+} check addTestCaseToStory for 7 expect 0
 
 -- FUNCTIONS
 
