@@ -75,7 +75,7 @@ pred inv[bt: BugTracking]{
 
 	some bt.features implies one bt.reliabilityStat 
 	no bt.features implies no bt.reliabilityStat 
-	all testcase: bt.testCases, description: bt.descriptions, failure: Failure | testcase -> description in bt.recordedDescT or failure -> description in bt.recordedDescF
+	all description: bt.descriptions, failure: bt.failures, testcase: bt.testCases  | failure -> description in bt.recordedDescF or testcase -> description in bt.recordedDescT
 
 	---
 	all failure: bt.failures| failure.(univ.inState) = Resolved implies one failure.(univ.recordedResolution)
@@ -136,10 +136,10 @@ fact traces {
 	inv[bugT/first]
 	all bt: BugTracking - bugT/last |
 		let btNext = bt.next |
-			some bt1, bt2: BugTracking, f: Feature,  s: Story, p: Priority, rr: Resolution, fai: Failure|
+			some bt1, bt2: BugTracking, f: Feature,  s: Story, p: Priority, rr: Resolution, fai: Failure, aa: Action, dd: Description, tt: TestCase, ss: State|
 		skip[bt, btNext] or
 			addStoryToFeature[bt1, bt2, f, s, p] or
-				addResolutionToFailure[bt1, bt2, rr, fai] --or
+				addResolutionToFailure[bt1, bt2, rr, fai, aa, dd, tt, ss] --or
 					--Lucas's function
 }run {} for 7 but 5 BugTracking expect 1
 
@@ -217,23 +217,26 @@ pred  addTestCaseToStory[preBT, postBT: BugTracking, feature: Feature, story: St
 		LUCAS UPDATE HERE
 	*/
 
-pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure]{
-//preBT, postBT: BugTracking, feature: Feature, story: Story, priority: Priority
+pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure, action: Action, description: Description, testcase: TestCase, state: State]{
 	//preconditions
-	resolution not in preBT.resolutions
-	//instate should be unresolved
-	//bt failure resolved
-	some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState 
-
-	failure -> resolution not in preBT.recordedResolution --resolution not already recorded
-	--some testcase: preBT.recordedFailures | some testcase.failure (hey kayvia sumn is up with this its giving a skolomizing error)
+	resolution not in preBT.resolutions -- the resolution should not exist in the resolutions
+	failure -> resolution not in preBT.recordedResolution -- must not already exist in recorded resolution
+	resolution -> action not in preBT.recordedActions -- resolution must not be in recordedResolutions
+	testcase -> description in preBT.recordedDescT -- all test cases have description
+	failure -> description in preBT.recordedDescF -- all failures should have description
+	 -- inState should not be resolved
+	
+	//some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState 
+	
 
 	//postconditions
-	resolution in postBT.resolutions //resolution must now be in resolutions
-	failure -> resolution in postBT.recordedResolution--must exist in recorded resolution
-	some TestCase -> postBT.stories
+	resolution in postBT.resolutions -- the resolution should exist in the resolutions
+	failure -> resolution in postBT.recordedResolution -- must exist in recorded resolution
+	resolution -> action in postBT.recordedActions -- resolution must be in recordedResolutions
+	-- inState should be 'Resolved'
+
 	//frameconditions
-	preBT != postBT
+	preBT != postBT --before and after state of the system should not be the same
 	preBT.features = postBT.features
 	preBT.failures = postBT.failures
 	#preBT.testCases = #postBT.testCases
@@ -241,8 +244,8 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	preBT.outputs = postBT.outputs
 	preBT.descriptions = postBT.descriptions
 	preBT.stories= postBT.stories
-	preBT.testCases = postBT.testCases
-	--story order shouldn't change
+	preBT.recordedDescF = postBT.recordedDescF
+//	preBT.inState != postBT.inState
 	
 
 	
@@ -314,8 +317,8 @@ assert addStoryToFeaturePreserves{
 
 
 assert addResolutionToFailurePreserves{
-	all preBT, postBT: BugTracking,r: Resolution, f: Failure |
-		inv[preBT] and addResolutionToFailure[preBT, postBT, r, f]
+	all preBT, postBT: BugTracking,r: Resolution, f: Failure, a: Action, d: Description, t: TestCase, s: State |
+		inv[preBT] and addResolutionToFailure[preBT, postBT, r, f, a, d, t, s]
 			implies inv[postBT]
 } check addResolutionToFailurePreserves for 7 expect 0
 
