@@ -240,7 +240,7 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	//preconditions
 	resolution not in preBT.resolutions -- the resolution should not exist in the resolutions
 	failure -> resolution not in preBT.recordedResolution -- must not already exist in recorded resolution
-	resolution -> action not in preBT.recordedActions -- resolution must not be in recordedResolutions
+	resolution not in dom[preBT.recordedActions] -- resolution must not be in recordedResolutions
 	//testcase -> description in preBT.recordedDescT -- all test cases have description
 //	failure -> description in preBT.recordedDescF -- all failures should have description
 	 -- inState should not be resolved
@@ -249,19 +249,20 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	
 
 	//postconditions
+	postBT.resolutions= preBT.resolutions+resolution
 	resolution in postBT.resolutions -- the resolution should exist in the resolutions
 	failure -> resolution in postBT.recordedResolution -- must exist in recorded resolution
 	resolution -> action in postBT.recordedActions -- resolution must be in recordedResolutions
 	-- inState should be 'Resolved'
+	#postBT.recordedResolution = add[#preBT.recordedResolution, 1]
 
 	//frameconditions
 	preBT != postBT --before and after state of the system should not be the same
 	preBT.features = postBT.features
 	preBT.failures = postBT.failures
-	#preBT.testCases = #postBT.testCases
 	preBT.stories= postBT.stories
 	preBT.reliabilityStat = postBT.reliabilityStat
-	#preBT.testCases = #postBT.testCases
+	preBT.testCases = postBT.testCases
 	preBT.failures = postBT.failures
 	preBT.actions = postBT.actions
 	preBT.defaultPriorities = postBT.defaultPriorities
@@ -279,6 +280,8 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 		preBT.actualOutput = postBT.actualOutput
 		preBT.expectedOutput = postBT.expectedOutput
 		preBT.recordedInput = postBT.recordedInput 
+	preBT.recordedStories = postBT.recordedStories 
+	preBT.storyOrder = postBT.storyOrder
 	
 
 	
