@@ -266,12 +266,12 @@ pred  addFeature[preBT, postBT: BugTracking, resolution: Resolution, failure: Fa
 
 	//frameconditions
 	preBT != postBT-- before and after state of system not the same
-	
+	 
 
 
 	--preBT.features = postBT.features features: set Feature,
 	--preBT.reliabilityStat = postBT.reliabilityStat 
-	#preBT.features != #postBT.features
+	--#preBT.features != #postBT.features
 	preBT.stories = postBT.stories
 	preBT.testCases = postBT.testCases
 	preBT.failures = postBT.failures
