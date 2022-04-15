@@ -271,7 +271,7 @@ pred  addFeature[preBT, postBT: BugTracking, resolution: Resolution, failure: Fa
 
 	--preBT.features = postBT.features features: set Feature,
 	--preBT.reliabilityStat = postBT.reliabilityStat 
-	--#preBT.features != #postBT.features
+	#preBT.features != #postBT.features
 	preBT.stories = postBT.stories
 	preBT.testCases = postBT.testCases
 	preBT.failures = postBT.failures
