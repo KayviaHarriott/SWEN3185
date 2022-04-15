@@ -136,12 +136,11 @@ fact traces {
 	inv[bugT/first]
 	all bt: BugTracking - bugT/last |
 		let btNext = bt.next |
-			some bt1, bt2: BugTracking, f: Feature,  s: Story, p: Priority, rr: Resolution, fai: Failure, aa: Action, dd: Description, tt: TestCase, ss: State, rel: ReliabilityStatus|
+			some bt1, bt2: BugTracking, f: Feature,  s: Story, p: Priority, rr: Resolution, fai: Failure, aa: Action, dd: Description, tt: TestCase, ss: State|
 		skip[bt, btNext] or
 			addStoryToFeature[bt1, bt2, f, s, p] or
 				addResolutionToFailure[bt1, bt2, rr, fai, aa, dd, tt, ss] or
-					// feature: Feature, rel: ReliabilityStatus, story: Story
-					addFeature [bt1, bt2, rr, fai, aa, dd, tt, ss, f, rel, s]--Lucas's function
+					addFeature [bt1, bt2, f]
 }run {} for 7 but 5 BugTracking expect 1
 
 
@@ -191,20 +190,11 @@ pred addStoryToFeature[preBT, postBT: BugTracking, feature: Feature, story: Stor
 	preBT.recordedInput = postBT.recordedInput 
 }run addStoryToFeature for 4 but 2 BugTracking expect 1
 
-
-
-
 pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure, action: Action, description: Description, testcase: TestCase, state: State]{
 	//preconditions
 	resolution not in preBT.resolutions -- the resolution should not exist in the resolutions
 	failure -> resolution not in preBT.recordedResolution -- must not already exist in recorded resolution
 	resolution not in dom[preBT.recordedActions] -- resolution must not be in recordedResolutions
-	//testcase -> description in preBT.recordedDescT -- all test cases have description
-//	failure -> description in preBT.recordedDescF -- all failures should have description
-	 -- inState should not be resolved
-	
-	//some failure: preBT.failures, state: preBT.defaultStates | failure -> state in preBT.inState 
-	
 
 	//postconditions
 	postBT.resolutions= preBT.resolutions+resolution
@@ -229,21 +219,16 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	preBT.descriptions = postBT.descriptions
 	preBT.inputs = postBT.inputs
 	preBT.outputs = postBT.outputs
-		preBT.recordedTestCases = postBT.recordedTestCases 
-		preBT.recordedFailures = postBT.recordedFailures
-	--	preBT.inState != postBT.inState
+	preBT.recordedTestCases = postBT.recordedTestCases 
+	preBT.recordedFailures = postBT.recordedFailures
 	preBT.severityLev = postBT.severityLev 
 	preBT.recordedDescF = postBT.recordedDescF
-		preBT.recordedDescT = postBT.recordedDescT
-		preBT.actualOutput = postBT.actualOutput
-		preBT.expectedOutput = postBT.expectedOutput
-		preBT.recordedInput = postBT.recordedInput 
+	preBT.recordedDescT = postBT.recordedDescT
+	preBT.actualOutput = postBT.actualOutput
+	preBT.expectedOutput = postBT.expectedOutput
+	preBT.recordedInput = postBT.recordedInput 
 	preBT.recordedStories = postBT.recordedStories 
 	preBT.storyOrder = postBT.storyOrder
-	
-
-	
-
 }run addResolutionToFailure for 4 but 2 BugTracking expect 1
 	/*
 		Given a Failure whose state is not being changed to resolved, we want to add the resolution to that failure so as to 
@@ -253,24 +238,17 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 	*/
 
 
-pred  addFeature[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure, action: Action, description: Description, testcase: TestCase, state: State, feature: Feature, rel: ReliabilityStatus, story: Story]{
+pred  addFeature[preBT, postBT: BugTracking,  feature: Feature]{
 	//preconditions
 	feature not in preBT.features-- feature does not exist
-	feature -> story not in preBT.recordedStories	--feature not associated with story
-	
+	feature not in  dom[preBT.recordedStories	]--feature not associated with story
 
 	//postconditions
 	postBT.features = preBT.features + feature-- feature added to system
-	feature in postBT.features-- feature does exist
-	feature -> story in postBT.recordedStories
-	
-
+	feature in preBT.features
 
 	//frameconditions
 	preBT != postBT-- before and after state of system not the same
-	preBT.features != postBT.features 
-	--preBT.reliabilityStat = postBT.reliabilityStat 
-	--#preBT.features != #postBT.features
 	preBT.stories = postBT.stories
 	preBT.testCases = postBT.testCases
 	preBT.failures = postBT.failures
@@ -282,7 +260,6 @@ pred  addFeature[preBT, postBT: BugTracking, resolution: Resolution, failure: Fa
 	preBT.descriptions = postBT.descriptions
 	preBT.inputs = postBT.inputs
 	preBT.outputs = postBT.outputs
-	
 	preBT.storyOrder = postBT.storyOrder
 	preBT.recordedPriorityS = postBT.recordedPriorityS
 	preBT.recordedTestCases = postBT.recordedTestCases
@@ -294,11 +271,8 @@ pred  addFeature[preBT, postBT: BugTracking, resolution: Resolution, failure: Fa
 	preBT.recordedDescF = postBT.recordedDescF
 	preBT.recordedPriorityT = postBT.recordedPriorityT
 	preBT.recordedDescT = postBT.recordedDescT
-
-
-
-	
-
+	preBT.recordedStories = postBT.recordedStories 
+	preBT.storyOrder = postBT.storyOrder
 }run addFeature for 4 but 2 BugTracking expect 1
 	/*
 		Given a Failure whose state is not being changed to resolved, we want to add the resolution to that failure so as to 
@@ -373,8 +347,8 @@ assert addResolutionToFailurePreserves{
 
 --addFeature[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure, action: Action, description: Description, testcase: TestCase, state: State, feature: Feature, rel: ReliabilityStatus, story: Story]
 assert addFeature{
-	all preBT, postBT: BugTracking,r: Resolution, f: Failure, a: Action, d: Description, t: TestCase, s: State, fe: Feature, rel: ReliabilityStatus, story: Story |
-		inv[preBT] and addFeature[preBT, postBT, r, f, a, d, t, s, fe, rel, story]
+	all preBT, postBT: BugTracking, fe: Feature|
+		inv[preBT] and addFeature[preBT, postBT, fe]
 			implies inv[postBT]
 } check addFeature for 7 expect 0 /**/
 
