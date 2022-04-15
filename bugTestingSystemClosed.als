@@ -256,20 +256,19 @@ pred  addResolutionToFailure[preBT, postBT: BugTracking, resolution: Resolution,
 pred  addFeature[preBT, postBT: BugTracking, resolution: Resolution, failure: Failure, action: Action, description: Description, testcase: TestCase, state: State, feature: Feature, rel: ReliabilityStatus, story: Story]{
 	//preconditions
 	feature not in preBT.features-- feature does not exist
+	feature -> story not in preBT.recordedStories	--feature not associated with story
 	
 
 	//postconditions
 	postBT.features = preBT.features + feature-- feature added to system
 	feature in postBT.features-- feature does exist
+	feature -> story in postBT.recordedStories
 	
 
 
 	//frameconditions
 	preBT != postBT-- before and after state of system not the same
-	 
-
-
-	--preBT.features = postBT.features features: set Feature,
+	preBT.features != postBT.features 
 	--preBT.reliabilityStat = postBT.reliabilityStat 
 	--#preBT.features != #postBT.features
 	preBT.stories = postBT.stories
@@ -295,6 +294,8 @@ pred  addFeature[preBT, postBT: BugTracking, resolution: Resolution, failure: Fa
 	preBT.recordedDescF = postBT.recordedDescF
 	preBT.recordedPriorityT = postBT.recordedPriorityT
 	preBT.recordedDescT = postBT.recordedDescT
+
+
 
 	
 
