@@ -245,7 +245,8 @@ pred  addFeature[preBT, postBT: BugTracking,  feature: Feature]{
 
 	//postconditions
 	postBT.features = preBT.features + feature-- feature added to system
-	feature in preBT.features
+	feature in postBT.features
+	some postBT.reliabilityStat
 
 	//frameconditions
 	preBT != postBT-- before and after state of system not the same
